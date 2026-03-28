@@ -4,41 +4,6 @@ import numpy as np
 import joblib
 
 # ================================
-# STYLE (THICKER SLIDER LINE + BIGGER KNOB)
-# ================================
-st.markdown("""
-<style>
-
-/* Add vertical spacing */
-div[data-baseweb="slider"] {
-    padding-top: 15px;
-    padding-bottom: 15px;
-}
-
-/* Slider track (grey background) */
-div[data-baseweb="slider"] > div > div {
-    height: 14px !important;
-    border-radius: 10px !important;
-}
-
-/* Slider handle (circle) */
-div[data-baseweb="slider"] [role="slider"] {
-    height: 28px !important;
-    width: 28px !important;
-    background-color: #ff4b4b !important;
-    border: none !important;
-}
-
-/* Value text above slider */
-div[data-baseweb="slider"] span {
-    font-size: 16px !important;
-    font-weight: bold;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# ================================
 # LOAD FILES
 # ================================
 model = joblib.load("model.pkl")
@@ -85,26 +50,30 @@ st.title("Well Lifetime Prediction")
 if st.button("Generate Random"):
     st.session_state["random"] = True
 
-# INPUTS
-PSN = st.slider("PSN", 0.0, 2000.0, 1500.0)
-AVE_GROSS = st.slider("Average Fluid Gross (bopd)", 0.0, 2000.0, 1500.0)
-AVE_GAS = st.slider("Average GAS (Mscfd)", 0.0, 100.0, 10.0)
-PUMP_EFF = st.slider("Pump Efficiency", 0.0, 1.0, 0.5)
-OD_PUMP = st.slider("Pump Outer Diameter (inch)", 1.0, 5.0, 2.5)
-SL = st.slider("Stroke Length (inch)", 0.0, 100.0, 50.0)
-SPM = st.slider("Stroke Per Minute", 0.0, 10.0, 5.0)
-SM = st.slider("Submergence (SM, in meter)", 0.0, 300.0, 100.0)
-TORQUE = st.slider("Torque", 0.0, 1.0, 0.5)    
-LOAD = st.slider("Load", 0.0, 1.0, 0.5)
-ROD_STRESS = st.slider("Rod Stress", 0.0, 1.0, 0.5)
-FREQ_OFF = st.slider("Freq Off", 0.0, 50.0, 10.0)
-HOUR_OFF = st.slider("Hour Off", 0.0, 100.0, 20.0)
+# ================================
+# INPUTS (TYPABLE)
+# ================================
+PSN = st.number_input("PSN", 0.0, 2000.0, 1500.0, step=10.0)
+AVE_GROSS = st.number_input("Average Fluid Gross (bopd)", 0.0, 2000.0, 1500.0, step=10.0)
+AVE_GAS = st.number_input("Average GAS (Mscfd)", 0.0, 100.0, 10.0, step=1.0)
+PUMP_EFF = st.number_input("Pump Efficiency", 0.0, 1.0, 0.5, step=0.01)
+OD_PUMP = st.number_input("Pump Outer Diameter (inch)", 1.0, 5.0, 2.5, step=0.1)
+SL = st.number_input("Stroke Length (inch)", 0.0, 100.0, 50.0, step=1.0)
+SPM = st.number_input("Stroke Per Minute", 0.0, 10.0, 5.0, step=0.1)
+SM = st.number_input("Submergence (SM, in meter)", 0.0, 300.0, 100.0, step=1.0)
+TORQUE = st.number_input("Torque", 0.0, 1.0, 0.5, step=0.01)
+LOAD = st.number_input("Load", 0.0, 1.0, 0.5, step=0.01)
+ROD_STRESS = st.number_input("Rod Stress", 0.0, 1.0, 0.5, step=0.01)
+FREQ_OFF = st.number_input("Freq Off", 0.0, 50.0, 10.0, step=1.0)
+HOUR_OFF = st.number_input("Hour Off", 0.0, 100.0, 20.0, step=1.0)
 
+# KEEP 0/1 AS SELECTBOX
 ROD_GUIDE = st.selectbox("Rod Guide", [0,1])
 GASSY = st.selectbox("Gassy", [0,1])
 PARAFFINIC = st.selectbox("Paraffinic", [0,1])
 SCALE = st.selectbox("Scale", [0,1])
 
+# CATEGORICAL
 WELL_TYPE = st.selectbox("Well Type", ["VERTICAL","DEVIATED","UNKNOWN"])
 DHS = st.selectbox("DHS", ["GACT","SANDTRAP","SANDTRAP_SHROUD","HYBRID", 'SCREEN', 'UNKNOWN'])
 
