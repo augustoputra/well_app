@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-import matplotlib.pyplot as plt
 
 # ================================
 # LOAD FILES
@@ -13,13 +12,17 @@ encoder = joblib.load("encoder.pkl")
 num_imputer = joblib.load("num_imputer.pkl")
 cat_imputer = joblib.load("cat_imputer.pkl")
 
-# OPTIONAL (only if you saved test data)
+# ================================
+# LOAD TRAIN DATA (FIXED)
+# ================================
 try:
     y_train = joblib.load("y_train.pkl")
     y_train_pred = joblib.load("y_train_pred.pkl")
-    HAS_TEST = True
-except:
-    HAS_TEST = False
+    HAS_TRAIN = True
+    st.write("✅ Training data loaded")
+except Exception as e:
+    HAS_TRAIN = False
+    st.error(f"❌ Error loading training data: {e}")
 
 num_cols = ['PSN','AVE_GROSS','AVE_GAS','PUMP_EFF','OD_PUMP','SL','SPM','SM',
             'TORQUE','LOAD','ROD_STRESS','FREQ_OFF','HOUR_OFF','ROD_GUIDE',
@@ -113,14 +116,10 @@ if st.button("Predict"):
 
     prediction = model.predict(processed)[0]
 
-    # ================================
-    # KPI DISPLAY
-    # ================================
+    # KPI
     st.metric("Predicted Lifetime (days)", f"{prediction:.0f}")
 
-    # ================================
-    # RISK INDICATOR
-    # ================================
+    # RISK
     if prediction < 100:
         st.error("⚠️ HIGH FAILURE RISK")
     elif prediction < 300:
@@ -128,35 +127,15 @@ if st.button("Predict"):
     else:
         st.success("✅ LOW RISK")
 
-    # ================================
-    # SENSITIVITY CHART (SPM)
-    # ================================
-    st.subheader("SPM Sensitivity")
+# ================================
+# ACTUAL vs PREDICTED (FIXED)
+# ================================
+if HAS_TRAIN:
+    st.subheader("Actual vs Predicted (Training Data)")
 
-    spm_range = np.linspace(0, 10, 30)
-    results = []
+    df_plot = pd.DataFrame({
+        "Actual": y_train,
+        "Predicted": y_train_pred
+    })
 
-    for val in spm_range:
-        temp = input_df.copy()
-        temp["SPM"] = val
-
-        proc = preprocess_data(temp, num_cols, cat_cols,
-                               num_imputer, cat_imputer, encoder, scaler)
-        pred = model.predict(proc)[0]
-        results.append(pred)
-
-    df_plot = pd.DataFrame({"SPM": spm_range, "Lifetime": results})
-    st.line_chart(df_plot.set_index("SPM"))
-
-    # ================================
-    # ACTUAL VS PREDICTED
-    # ================================
-    if HAS_TEST:
-        st.subheader("Model Performance: Actual vs Predicted")
-        fig, ax = plt.subplots()
-        ax.scatter(y_train, y_train_pred, alpha=0.5)
-        ax.set_xlabel("Actual")
-        ax.set_ylabel("Predicted")
-        ax.set_title("Actual vs Predicted")
-
-        st.pyplot(fig)
+    st.scatter_chart(df_plot)
