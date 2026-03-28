@@ -4,3 +4,4 @@ pandas
 numpy
 joblib
 lightgbm==4.3.0
+matplotlib
