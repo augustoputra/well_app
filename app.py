@@ -4,6 +4,22 @@ import numpy as np
 import joblib
 
 # ================================
+# STYLE (MAKE SLIDER THICKER)
+# ================================
+st.markdown("""
+<style>
+div[data-baseweb="slider"] > div {
+    height: 12px !important;
+}
+
+div[data-baseweb="slider"] [role="slider"] {
+    height: 25px !important;
+    width: 25px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ================================
 # LOAD FILES
 # ================================
 model = joblib.load("model.pkl")
@@ -19,7 +35,7 @@ num_cols = ['PSN','AVE_GROSS','AVE_GAS','PUMP_EFF','OD_PUMP','SL','SPM','SM',
 cat_cols = ['WELL_TYPE','DHS']
 
 # ================================
-# PREPROCESS FUNCTION (FROM YOUR NOTEBOOK)
+# PREPROCESS FUNCTION
 # ================================
 def preprocess_data(data, num_cols, cat_cols, num_imputer, cat_imputer, cat_encoder, scaler):
     X_num = data[num_cols]
@@ -48,13 +64,12 @@ def preprocess_data(data, num_cols, cat_cols, num_imputer, cat_imputer, cat_enco
 # ================================
 st.title("Well Lifetime Prediction")
 
-# RANDOM BUTTON
 if st.button("Generate Random"):
     st.session_state["random"] = True
 
 # INPUTS
-PSN = st.slider("PSN", 0.0, 500.0, 1500.0)
-AVE_GROSS = st.slider("Average Fluid Gross (bopd)", 0.0, 500.0, 1500.0)
+PSN = st.slider("PSN", 0.0, 2000.0, 1500.0)
+AVE_GROSS = st.slider("Average Fluid Gross (bopd)", 0.0, 2000.0, 1500.0)
 AVE_GAS = st.slider("Average GAS (Mscfd)", 0.0, 100.0, 10.0)
 PUMP_EFF = st.slider("Pump Efficiency", 0.0, 1.0, 0.5)
 OD_PUMP = st.slider("Pump Outer Diameter (inch)", 1.0, 5.0, 2.5)
@@ -107,4 +122,4 @@ if st.button("Predict"):
 
     prediction = model.predict(processed)
 
-    st.success(f"Predicted Lifetime: {prediction[0]:.2f}")
+    st.success(f"Predicted Lifetime: {prediction[0]:.2f} days")
