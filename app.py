@@ -123,14 +123,6 @@ if st.button("Predict"):
     # KPI
     st.metric("Predicted Lifetime (days)", f"{prediction:.0f}")
 
-    # RISK
-    if prediction < 100:
-        st.error("⚠️ HIGH FAILURE RISK")
-    elif prediction < 300:
-        st.warning("⚠️ MEDIUM RISK")
-    else:
-        st.success("✅ LOW RISK")
-
 # ================================
 # ACTUAL vs PREDICTED (FAST)
 # ================================
