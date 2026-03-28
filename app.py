@@ -4,26 +4,32 @@ import numpy as np
 import joblib
 
 # ================================
-# LOAD FILES
+# CACHE EVERYTHING (IMPORTANT 🚀)
 # ================================
-model = joblib.load("model.pkl")
-scaler = joblib.load("scaler.pkl")
-encoder = joblib.load("encoder.pkl")
-num_imputer = joblib.load("num_imputer.pkl")
-cat_imputer = joblib.load("cat_imputer.pkl")
+@st.cache_resource
+def load_all():
+    model = joblib.load("model.pkl")
+    scaler = joblib.load("scaler.pkl")
+    encoder = joblib.load("encoder.pkl")
+    num_imputer = joblib.load("num_imputer.pkl")
+    cat_imputer = joblib.load("cat_imputer.pkl")
+
+    try:
+        y_train = joblib.load("y_train.pkl")
+        y_train_pred = joblib.load("y_train_pred.pkl")
+        HAS_TRAIN = True
+    except:
+        y_train, y_train_pred = None, None
+        HAS_TRAIN = False
+
+    return model, scaler, encoder, num_imputer, cat_imputer, y_train, y_train_pred, HAS_TRAIN
+
+
+model, scaler, encoder, num_imputer, cat_imputer, y_train, y_train_pred, HAS_TRAIN = load_all()
 
 # ================================
-# LOAD TRAIN DATA (FIXED)
+# CONFIG
 # ================================
-try:
-    y_train = joblib.load("y_train.pkl")
-    y_train_pred = joblib.load("y_train_pred.pkl")
-    HAS_TRAIN = True
-    st.write("✅ Training data loaded")
-except Exception as e:
-    HAS_TRAIN = False
-    st.error(f"❌ Error loading training data: {e}")
-
 num_cols = ['PSN','AVE_GROSS','AVE_GAS','PUMP_EFF','OD_PUMP','SL','SPM','SM',
             'TORQUE','LOAD','ROD_STRESS','FREQ_OFF','HOUR_OFF','ROD_GUIDE',
             'GASSY','PARAFFINIC','SCALE']
@@ -33,7 +39,7 @@ cat_cols = ['WELL_TYPE','DHS']
 # ================================
 # PREPROCESS FUNCTION
 # ================================
-def preprocess_data(data, num_cols, cat_cols, num_imputer, cat_imputer, cat_encoder, scaler):
+def preprocess_data(data):
     X_num = data[num_cols]
     X_cat = data[cat_cols]
 
@@ -43,10 +49,10 @@ def preprocess_data(data, num_cols, cat_cols, num_imputer, cat_imputer, cat_enco
     X_cat = cat_imputer.transform(X_cat)
     X_cat = pd.DataFrame(X_cat, columns=cat_cols)
 
-    X_cat_encoded = cat_encoder.transform(X_cat)
+    X_cat_encoded = encoder.transform(X_cat)
     X_cat_encoded = pd.DataFrame(
         X_cat_encoded,
-        columns=cat_encoder.get_feature_names_out(cat_cols)
+        columns=encoder.get_feature_names_out(cat_cols)
     )
 
     X_concat = pd.concat([X_num, X_cat_encoded], axis=1)
@@ -85,7 +91,7 @@ WELL_TYPE = st.selectbox("Well Type", ["VERTICAL","DEVIATED","UNKNOWN"])
 DHS = st.selectbox("DHS", ["GACT","SANDTRAP","SANDTRAP_SHROUD","HYBRID","SCREEN","UNKNOWN"])
 
 # ================================
-# PREDICT
+# PREDICT (FAST)
 # ================================
 if st.button("Predict"):
 
@@ -111,9 +117,7 @@ if st.button("Predict"):
         'DHS': DHS
     }])
 
-    processed = preprocess_data(input_df, num_cols, cat_cols,
-                                num_imputer, cat_imputer, encoder, scaler)
-
+    processed = preprocess_data(input_df)
     prediction = model.predict(processed)[0]
 
     # KPI
@@ -128,7 +132,7 @@ if st.button("Predict"):
         st.success("✅ LOW RISK")
 
 # ================================
-# ACTUAL vs PREDICTED (FIXED)
+# ACTUAL vs PREDICTED (FAST)
 # ================================
 if HAS_TRAIN:
     st.subheader("Actual vs Predicted (Training Data)")
