@@ -4,18 +4,37 @@ import numpy as np
 import joblib
 
 # ================================
-# STYLE (MAKE SLIDER THICKER)
+# STYLE (THICKER SLIDER LINE + BIGGER KNOB)
 # ================================
 st.markdown("""
 <style>
-div[data-baseweb="slider"] > div {
-    height: 12px !important;
+
+/* Add vertical spacing */
+div[data-baseweb="slider"] {
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
-div[data-baseweb="slider"] [role="slider"] {
-    height: 25px !important;
-    width: 25px !important;
+/* Slider track (grey background) */
+div[data-baseweb="slider"] > div > div {
+    height: 14px !important;
+    border-radius: 10px !important;
 }
+
+/* Slider handle (circle) */
+div[data-baseweb="slider"] [role="slider"] {
+    height: 28px !important;
+    width: 28px !important;
+    background-color: #ff4b4b !important;
+    border: none !important;
+}
+
+/* Value text above slider */
+div[data-baseweb="slider"] span {
+    font-size: 16px !important;
+    font-weight: bold;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -54,7 +73,6 @@ def preprocess_data(data, num_cols, cat_cols, num_imputer, cat_imputer, cat_enco
     )
 
     X_concat = pd.concat([X_num, X_cat_encoded], axis=1)
-
     X_scaled = scaler.transform(X_concat)
 
     return X_scaled
