@@ -15,8 +15,8 @@ cat_imputer = joblib.load("cat_imputer.pkl")
 
 # OPTIONAL (only if you saved test data)
 try:
-    X_test = joblib.load("X_test.pkl")
-    y_test = joblib.load("y_test.pkl")
+    y_train = joblib.load("y_train.pkl")
+    y_train_pred = joblib.load("y_train_pred.pkl")
     HAS_TEST = True
 except:
     HAS_TEST = False
@@ -153,11 +153,8 @@ if st.button("Predict"):
     # ================================
     if HAS_TEST:
         st.subheader("Model Performance: Actual vs Predicted")
-
-        y_pred = model.predict(X_test)
-
         fig, ax = plt.subplots()
-        ax.scatter(y_test, y_pred, alpha=0.5)
+        ax.scatter(y_train, y_train_pred, alpha=0.5)
         ax.set_xlabel("Actual")
         ax.set_ylabel("Predicted")
         ax.set_title("Actual vs Predicted")
