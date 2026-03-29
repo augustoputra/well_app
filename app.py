@@ -69,23 +69,29 @@ st.title("Well Lifetime Prediction")
 st.markdown("""
 <style>
 
-/* TARGET the actual input text inside Streamlit number_input */
+/* 🔥 INPUT VALUE (inside box) */
 div[data-baseweb="input"] input {
     font-size: 22px !important;
     font-weight: 800 !important;
     color: white !important;
 }
 
-/* Make the input box slightly taller */
-div[data-baseweb="input"] {
-    padding-top: 6px;
-    padding-bottom: 6px;
+/* 🔥 SELECTBOX VALUE */
+div[data-baseweb="select"] span {
+    font-size: 20px !important;
+    font-weight: 700 !important;
 }
 
-/* Optional: label also bold */
+/* 🔥 LABELS (THIS FIXES "Rod Guide", "Gassy", etc.) */
 label {
-    font-weight: 700 !important;
-    font-size: 18px !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: white !important;
+}
+
+/* 🔥 EXTRA: make spacing nicer */
+div.stSelectbox, div.stNumberInput {
+    margin-bottom: 10px;
 }
 
 </style>
