@@ -72,29 +72,35 @@ st.title("Well Lifetime Prediction")
 st.markdown("""
 <style>
 
-/* 🔥 REAL FIX FOR LABEL TEXT (PSN, etc.) */
-div[data-testid="stWidgetLabel"] p {
-    font-size: 100px !important;
-    font-weight: 1200 !important;
+/* 🔥 FORCE ALL WIDGET LABEL TEXT */
+[data-testid="stWidgetLabel"] p,
+[data-testid="stWidgetLabel"] label {
+    font-size: 28px !important;
+    font-weight: 900 !important;
     color: white !important;
 }
 
-/* 🔥 INPUT VALUE */
-div[data-baseweb="input"] input {
+/* 🔥 FORCE INPUT VALUE */
+[data-baseweb="input"] input {
     font-size: 22px !important;
     font-weight: 800 !important;
 }
 
-/* 🔥 SELECTBOX TEXT */
-div[data-baseweb="select"] span {
+/* 🔥 FORCE SELECTBOX TEXT */
+[data-baseweb="select"] span {
     font-size: 22px !important;
     font-weight: 800 !important;
 }
 
-/* 🔥 OPTIONAL: make input box slightly bigger */
-div[data-baseweb="input"] {
-    padding-top: 6px;
-    padding-bottom: 6px;
+/* 🔥 NUCLEAR OPTION (overrides everything if needed) */
+section.main * {
+    font-family: sans-serif !important;
+}
+
+/* 🔥 EXTRA FORCE (VERY IMPORTANT) */
+.css-1cpxqw2, .css-1y4p8pa {
+    font-size: 28px !important;
+    font-weight: 900 !important;
 }
 
 </style>
