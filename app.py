@@ -212,4 +212,4 @@ if HAS_TRAIN:
     ax.set_ylabel("Predicted")
     ax.set_title("Actual vs Predicted")
 
-    st.pyplot(fig))
+    st.pyplot(fig)
