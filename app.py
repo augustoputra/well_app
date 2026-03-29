@@ -75,8 +75,8 @@ st.markdown("""
 /* 🔥 FORCE ALL WIDGET LABEL TEXT */
 [data-testid="stWidgetLabel"] p,
 [data-testid="stWidgetLabel"] label {
-    font-size: 28px !important;
-    font-weight: 900 !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
     color: white !important;
 }
 
