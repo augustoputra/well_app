@@ -124,7 +124,7 @@ if st.button("Predict"):
     prediction = model.predict(processed)[0]
 
     # KPI
-    st.metric("Predicted Lifetime (days)", f"{prediction:.0f}")
+    st.metric("Predicted Lifetime", f"{prediction:.0f} Days")
 
 # ================================
 # ACTUAL vs PREDICTED (PRO CHART)
