@@ -100,7 +100,7 @@ section.main * {
 /* 🔥 EXTRA FORCE (VERY IMPORTANT) */
 .css-1cpxqw2, .css-1y4p8pa {
     font-size: 28px !important;
-    font-weight: 900 !important;
+    font-weight: 800 !important;
 }
 
 </style>
