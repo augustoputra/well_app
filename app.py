@@ -124,14 +124,23 @@ if st.button("Predict"):
     st.metric("Predicted Lifetime (days)", f"{prediction:.0f}")
 
 # ================================
-# ACTUAL vs PREDICTED (FAST)
+# ACTUAL vs PREDICTED + CURRENT POINT
 # ================================
 if HAS_TRAIN:
-    st.subheader("Actual vs Predicted (Training Data)")
+    st.subheader("Actual vs Predicted (Training + Current Prediction)")
 
     df_plot = pd.DataFrame({
         "Actual": y_train,
         "Predicted": y_train_pred
     })
+
+    # ADD CURRENT PREDICTION INTO CHART
+    if "prediction" in locals():
+        df_current = pd.DataFrame({
+            "Actual": [prediction],
+            "Predicted": [prediction]
+        })
+
+        df_plot = pd.concat([df_plot, df_current], ignore_index=True)
 
     st.scatter_chart(df_plot)
