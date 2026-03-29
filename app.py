@@ -69,6 +69,13 @@ st.title("Well Lifetime Prediction")
 st.markdown("""
 <style>
 
+/* 🔥 TARGET Streamlit field labels (THIS IS THE KEY FIX) */
+div[data-testid="stWidgetLabel"] {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: white !important;
+}
+
 /* 🔥 INPUT VALUE (inside box) */
 div[data-baseweb="input"] input {
     font-size: 22px !important;
@@ -78,24 +85,7 @@ div[data-baseweb="input"] input {
 
 /* 🔥 SELECTBOX VALUE */
 div[data-baseweb="select"] span {
-    font-size: 20px !important;
-    font-weight: 700 !important;
-}
-
-/* 🔥 LABELS (THIS FIXES "Rod Guide", "Gassy", etc.) */
-label {
-    font-size: 20px !important;
-    font-weight: 800 !important;
-    color: white !important;
-}
-
-/* 🔥 EXTRA: make spacing nicer */
-div.stSelectbox, div.stNumberInput {
-    margin-bottom: 10px;
-}
-
-</style>
-""", unsafe_allow_html=True)
+   
 # ================================
 # INPUTS
 # ================================
