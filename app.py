@@ -125,23 +125,24 @@ if st.button("Predict"):
     st.metric("Predicted Lifetime (days)", f"{prediction:.0f}")
 
 # ================================
-# ACTUAL vs PREDICTED + CURRENT POINT
+# ACTUAL vs PREDICTED (PRO CHART)
 # ================================
 if HAS_TRAIN:
-    st.subheader("Actual vs Predicted (Training + Current Prediction)")
+    st.subheader("Actual vs Predicted (Training Data)")
 
-    df_plot = pd.DataFrame({
-        "Actual": y_train,
-        "Predicted": y_train_pred
-    })
+    fig, ax = plt.subplots()
 
-    # ADD CURRENT PREDICTION INTO CHART
-    if "prediction" in locals():
-        df_current = pd.DataFrame({
-            "Actual": [prediction],
-            "Predicted": [prediction]
-        })
+    # Scatter
+    ax.scatter(y_train, y_train_pred, alpha=0.6)
 
-        df_plot = pd.concat([df_plot, df_current], ignore_index=True)
+    # Diagonal line (perfect prediction)
+    min_val = min(min(y_train), min(y_train_pred))
+    max_val = max(max(y_train), max(y_train_pred))
+    ax.plot([min_val, max_val], [min_val, max_val], 'r-')
 
-    st.scatter_chart(df_plot)
+    # Labels
+    ax.set_xlabel("Actual")
+    ax.set_ylabel("Predicted")
+    ax.set_title("Actual vs Predicted")
+
+    st.pyplot(fig)
