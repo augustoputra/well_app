@@ -66,6 +66,35 @@ def preprocess_data(data):
 # ================================
 st.title("Well Lifetime Prediction")
 
+st.markdown("""
+<style>
+
+/* Make text inside number input thicker */
+input[type="number"] {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+}
+
+/* Make arrows (up/down) bigger too */
+input[type="number"]::-webkit-inner-spin-button {
+    transform: scale(1.3);
+}
+
+/* Make labels bold */
+label {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+}
+
+/* Selectbox text thicker */
+div[data-baseweb="select"] span {
+    font-weight: 700 !important;
+    font-size: 18px !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 # ================================
 # INPUTS
 # ================================
