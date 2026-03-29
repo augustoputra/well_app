@@ -74,7 +74,7 @@ st.markdown("""
 
 /* 🔥 REAL FIX FOR LABEL TEXT (PSN, etc.) */
 div[data-testid="stWidgetLabel"] p {
-    font-size: 26px !important;
+    font-size: 100px !important;
     font-weight: 900 !important;
     color: white !important;
 }
