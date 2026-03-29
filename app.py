@@ -160,7 +160,28 @@ if st.button("Predict"):
     processed = preprocess_data(input_df)
     prediction = model.predict(processed)[0]
 
-    st.metric("Predicted Lifetime", f"{prediction:.0f} Days")
+    # ================================
+# 🔥 BIG KPI DISPLAY (GREEN)
+# ================================
+st.markdown("### Predicted Lifetime")
+
+st.markdown(f"""
+<div style="
+    background-color: #0f5132;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 20px;
+">
+    <div style="font-size: 20px; color: #a7f3d0; font-weight: 600;">
+        Predicted Lifetime
+    </div>
+    <div style="font-size: 48px; color: #00ff88; font-weight: 900;">
+        {prediction:.0f} Days
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ================================
 # ACTUAL vs PREDICTED + METRICS
