@@ -72,25 +72,23 @@ st.title("Well Lifetime Prediction")
 st.markdown("""
 <style>
 
-/* LABEL TEXT (PSN, etc.) */
-div[data-testid="stWidgetLabel"] {
-    font-size: 80px !important;
-    font-weight: 1000 !important;
+/* 🔥 THIS is the REAL label selector (new Streamlit) */
+div[data-testid="stWidgetLabel"] p {
+    font-size: 26px !important;
+    font-weight: 900 !important;
     color: white !important;
 }
 
-/* INPUT VALUE */
+/* 🔥 number input value */
 div[data-baseweb="input"] input {
     font-size: 22px !important;
     font-weight: 800 !important;
-    color: white !important;
 }
 
-/* SELECTBOX VALUE */
+/* 🔥 selectbox text */
 div[data-baseweb="select"] span {
     font-size: 22px !important;
     font-weight: 800 !important;
-    color: white !important;
 }
 
 </style>
