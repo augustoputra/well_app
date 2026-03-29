@@ -163,10 +163,39 @@ if st.button("Predict"):
     st.metric("Predicted Lifetime", f"{prediction:.0f} Days")
 
 # ================================
-# ACTUAL vs PREDICTED
+# ACTUAL vs PREDICTED + METRICS
 # ================================
+from sklearn.metrics import r2_score, mean_squared_error
+
 if HAS_TRAIN:
-    st.subheader("Actual vs Predicted (Training Data)")
+    st.subheader("Model Performance")
+
+    # 🔥 CALCULATE METRICS
+    r2 = r2_score(y_train, y_train_pred)
+    rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
+
+    # 🔥 MODEL TYPE (AUTO)
+    model_type = type(model).__name__
+
+    # Optional: cleaner naming
+    if "XGB" in model_type:
+        model_type = "XGBoost"
+    elif "LGBM" in model_type:
+        model_type = "LightGBM"
+    elif "RandomForest" in model_type:
+        model_type = "Random Forest"
+
+    # 🔥 DISPLAY METRICS
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("R² Score", f"{r2:.3f}")
+    col2.metric("RMSE", f"{rmse:.2f}")
+    col3.metric("Model Type", model_type)
+
+    # ================================
+    # PLOT
+    # ================================
+    st.subheader("Actual vs Predicted")
 
     fig, ax = plt.subplots()
 
@@ -183,4 +212,4 @@ if HAS_TRAIN:
     ax.set_ylabel("Predicted")
     ax.set_title("Actual vs Predicted")
 
-    st.pyplot(fig)
+    st.pyplot(fig))
