@@ -140,6 +140,9 @@ if HAS_TRAIN:
     max_val = max(max(y_train), max(y_train_pred))
     ax.plot([min_val, max_val], [min_val, max_val], 'r-')
 
+    ax.set_xlim(0. 800)
+    ax.set_ylim(0, 800)
+
     # Labels
     ax.set_xlabel("Actual")
     ax.set_ylabel("Predicted")
