@@ -69,32 +69,27 @@ st.title("Well Lifetime Prediction")
 st.markdown("""
 <style>
 
-/* Make text inside number input thicker */
-input[type="number"] {
-    font-size: 20px !important;
-    font-weight: 700 !important;
+/* TARGET the actual input text inside Streamlit number_input */
+div[data-baseweb="input"] input {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: white !important;
 }
 
-/* Make arrows (up/down) bigger too */
-input[type="number"]::-webkit-inner-spin-button {
-    transform: scale(1.3);
+/* Make the input box slightly taller */
+div[data-baseweb="input"] {
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
-/* Make labels bold */
+/* Optional: label also bold */
 label {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-}
-
-/* Selectbox text thicker */
-div[data-baseweb="select"] span {
     font-weight: 700 !important;
     font-size: 18px !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
-
 # ================================
 # INPUTS
 # ================================
