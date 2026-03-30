@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import joblib
 import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score, mean_squared_error
 
 # ================================
 # CACHE EVERYTHING (IMPORTANT 🚀)
@@ -66,45 +67,28 @@ def preprocess_data(data):
 # ================================
 st.title("Well Lifetime Prediction")
 
-# ================================
-# 🔥 FIXED CSS (WORKING)
-# ================================
 st.markdown("""
 <style>
-
-/* 🔥 FORCE ALL WIDGET LABEL TEXT */
 [data-testid="stWidgetLabel"] p,
 [data-testid="stWidgetLabel"] label {
     font-size: 22px !important;
     font-weight: 800 !important;
     color: white !important;
 }
-
-/* 🔥 FORCE INPUT VALUE */
 [data-baseweb="input"] input {
     font-size: 22px !important;
     font-weight: 800 !important;
 }
-
-/* 🔥 FORCE SELECTBOX TEXT */
 [data-baseweb="select"] span {
     font-size: 22px !important;
     font-weight: 800 !important;
 }
-
-/* 🔥 NUCLEAR OPTION (overrides everything if needed) */
 section.main * {
     font-family: sans-serif !important;
 }
-
-/* 🔥 EXTRA FORCE (VERY IMPORTANT) */
-.css-1cpxqw2, .css-1y4p8pa {
-    font-size: 28px !important;
-    font-weight: 800 !important;
-}
-
 </style>
 """, unsafe_allow_html=True)
+
 # ================================
 # INPUTS
 # ================================
@@ -122,13 +106,13 @@ ROD_STRESS = st.number_input("Rod Stress", 0.0, 1.0, 0.5)
 FREQ_OFF = st.number_input("Freq Off", 0.0, 500.0, 10.0)
 HOUR_OFF = st.number_input("Hour Off", 0.0, 9000.0, 20.0)
 
-ROD_GUIDE = st.selectbox("Rod Guide", [0,1])
-GASSY = st.selectbox("Gassy", [0,1])
-PARAFFINIC = st.selectbox("Paraffinic", [0,1])
-SCALE = st.selectbox("Scale", [0,1])
+ROD_GUIDE = st.selectbox("Rod Guide", [0, 1])
+GASSY = st.selectbox("Gassy", [0, 1])
+PARAFFINIC = st.selectbox("Paraffinic", [0, 1])
+SCALE = st.selectbox("Scale", [0, 1])
 
-WELL_TYPE = st.selectbox("Well Type", ["VERTICAL","DEVIATED","UNKNOWN"])
-DHS = st.selectbox("DHS", ["GACT","SANDTRAP","SANDTRAP_SHROUD","HYBRID","SCREEN","UNKNOWN"])
+WELL_TYPE = st.selectbox("Well Type", ["VERTICAL", "DEVIATED", "UNKNOWN"])
+DHS = st.selectbox("DHS", ["GACT", "SANDTRAP", "SANDTRAP_SHROUD", "HYBRID", "SCREEN", "UNKNOWN"])
 
 # ================================
 # PREDICT
@@ -161,77 +145,66 @@ if st.button("Predict"):
     prediction = model.predict(processed)[0]
 
     # ================================
-# ================================
-# 🔥 BIG KPI DISPLAY (GREEN)
-# ================================
-st.markdown("### Predicted Lifetime")
+    # 🔥 BIG KPI DISPLAY (GREEN)
+    # ================================
+    st.markdown("### Predicted Lifetime")
 
-st.markdown(f"""
-<div style="
-    background-color: #0f5132;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    margin-top: 10px;
-    margin-bottom: 20px;
-">
-    <div style="font-size: 20px; color: #a7f3d0; font-weight: 600;">
-        Predicted Lifetime
+    st.markdown(f"""
+    <div style="
+        background-color: #0f5132;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    ">
+        <div style="font-size: 20px; color: #a7f3d0; font-weight: 600;">
+            Predicted Lifetime
+        </div>
+        <div style="font-size: 48px; color: #00ff88; font-weight: 900;">
+            {prediction:.0f} Days
+        </div>
     </div>
-    <div style="font-size: 48px; color: #00ff88; font-weight: 900;">
-        {prediction:.0f} Days
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# ================================
-# ACTUAL vs PREDICTED + METRICS
-# ================================
-from sklearn.metrics import r2_score, mean_squared_error
-
-if HAS_TRAIN:
-    st.subheader("Model Performance")
-
-    # 🔥 CALCULATE METRICS
-    r2 = r2_score(y_train, y_train_pred)
-    rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
-
-    # 🔥 MODEL TYPE (AUTO)
-    model_type = type(model).__name__
-
-    # Optional: cleaner naming
-    if "XGB" in model_type:
-        model_type = "XGBoost"
-    elif "LGBM" in model_type:
-        model_type = "LightGBM"
-    elif "RandomForest" in model_type:
-        model_type = "Random Forest"
-
-    # 🔥 DISPLAY METRICS
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric("R² Score", f"{r2:.3f}")
-    col2.metric("RMSE", f"{rmse:.2f}")
-    col3.metric("Model Type", model_type)
+    """, unsafe_allow_html=True)
 
     # ================================
-    # PLOT
+    # ACTUAL vs PREDICTED + METRICS
     # ================================
-    st.subheader("Actual vs Predicted")
+    if HAS_TRAIN:
+        st.subheader("Model Performance")
 
-    fig, ax = plt.subplots()
+        r2 = r2_score(y_train, y_train_pred)
+        rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
 
-    ax.scatter(y_train, y_train_pred, alpha=0.6)
+        model_type = type(model).__name__
+        if "XGB" in model_type:
+            model_type = "XGBoost"
+        elif "LGBM" in model_type:
+            model_type = "LightGBM"
+        elif "RandomForest" in model_type:
+            model_type = "Random Forest"
 
-    min_val = min(min(y_train), min(y_train_pred))
-    max_val = max(max(y_train), max(y_train_pred))
-    ax.plot([min_val, max_val], [min_val, max_val], 'r-')
+        col1, col2, col3 = st.columns(3)
+        col1.metric("R² Score", f"{r2:.3f}")
+        col2.metric("RMSE", f"{rmse:.2f}")
+        col3.metric("Model Type", model_type)
 
-    ax.set_xlim(0, 800)
-    ax.set_ylim(0, 800)
+        # ================================
+        # PLOT
+        # ================================
+        st.subheader("Actual vs Predicted")
 
-    ax.set_xlabel("Actual")
-    ax.set_ylabel("Predicted")
-    ax.set_title("Actual vs Predicted")
+        fig, ax = plt.subplots()
+        ax.scatter(y_train, y_train_pred, alpha=0.6)
 
-    st.pyplot(fig)
+        min_val = min(np.min(y_train), np.min(y_train_pred))
+        max_val = max(np.max(y_train), np.max(y_train_pred))
+        ax.plot([min_val, max_val], [min_val, max_val], 'r-')
+
+        ax.set_xlim(0, 800)
+        ax.set_ylim(0, 800)
+        ax.set_xlabel("Actual")
+        ax.set_ylabel("Predicted")
+        ax.set_title("Actual vs Predicted")
+
+        st.pyplot(fig)
