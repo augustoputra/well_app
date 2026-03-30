@@ -51,4 +51,160 @@ def preprocess_data(data):
     X_cat = cat_imputer.transform(X_cat)
     X_cat = pd.DataFrame(X_cat, columns=cat_cols)
 
-    X_cat_enco
+    X_cat_encoded = encoder.transform(X_cat)
+    X_cat_encoded = pd.DataFrame(
+        X_cat_encoded,
+        columns=encoder.get_feature_names_out(cat_cols)
+    )
+
+    X_concat = pd.concat([X_num, X_cat_encoded], axis=1)
+    X_scaled = scaler.transform(X_concat)
+
+    return X_scaled
+
+# ================================
+# UI
+# ================================
+st.title("Well Lifetime Prediction")
+
+st.markdown("""
+<style>
+[data-testid="stWidgetLabel"] p,
+[data-testid="stWidgetLabel"] label {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: #1a1a1a !important;
+}
+[data-baseweb="input"] input {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+}
+[data-baseweb="select"] span {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+}
+section.main * {
+    font-family: sans-serif !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ================================
+# INPUTS
+# ================================
+PSN = st.number_input("PSN", 0.0, 2500.0, 1500.0)
+AVE_GROSS = st.number_input("Average Fluid Gross (bopd)", 0.0, 2500.0, 1500.0)
+AVE_GAS = st.number_input("Average GAS (Mscfd)", 0.0, 1000.0, 10.0)
+PUMP_EFF = st.number_input("Pump Efficiency", 0.0, 1.0, 0.5)
+OD_PUMP = st.number_input("Pump Outer Diameter (inch)", 1.0, 5.0, 2.5)
+SL = st.number_input("Stroke Length (inch)", 0.0, 200.0, 50.0)
+SPM = st.number_input("Stroke Per Minute", 0.0, 13.0, 5.0)
+SM = st.number_input("Submergence (SM, in meter)", 0.0, 3000.0, 100.0)
+TORQUE = st.number_input("Torque", 0.0, 1.0, 0.5)
+LOAD = st.number_input("Load", 0.0, 1.0, 0.5)
+ROD_STRESS = st.number_input("Rod Stress", 0.0, 1.0, 0.5)
+FREQ_OFF = st.number_input("Freq Off", 0.0, 500.0, 10.0)
+HOUR_OFF = st.number_input("Hour Off", 0.0, 9000.0, 20.0)
+
+ROD_GUIDE = st.selectbox("Rod Guide", [0, 1])
+GASSY = st.selectbox("Gassy", [0, 1])
+PARAFFINIC = st.selectbox("Paraffinic", [0, 1])
+SCALE = st.selectbox("Scale", [0, 1])
+
+WELL_TYPE = st.selectbox("Well Type", ["VERTICAL", "DEVIATED", "UNKNOWN"])
+DHS = st.selectbox("DHS", ["GACT", "SANDTRAP", "SANDTRAP_SHROUD", "HYBRID", "SCREEN", "UNKNOWN"])
+
+# ================================
+# PREDICT
+# ================================
+if st.button("Predict"):
+
+    input_df = pd.DataFrame([{
+        'PSN': PSN,
+        'AVE_GROSS': AVE_GROSS,
+        'AVE_GAS': AVE_GAS,
+        'PUMP_EFF': PUMP_EFF,
+        'OD_PUMP': OD_PUMP,
+        'SL': SL,
+        'SPM': SPM,
+        'SM': SM,
+        'TORQUE': TORQUE,
+        'LOAD': LOAD,
+        'ROD_STRESS': ROD_STRESS,
+        'FREQ_OFF': FREQ_OFF,
+        'HOUR_OFF': HOUR_OFF,
+        'ROD_GUIDE': ROD_GUIDE,
+        'GASSY': GASSY,
+        'PARAFFINIC': PARAFFINIC,
+        'SCALE': SCALE,
+        'WELL_TYPE': WELL_TYPE,
+        'DHS': DHS
+    }])
+
+    processed = preprocess_data(input_df)
+    prediction = model.predict(processed)[0]
+
+    # ================================
+    # 🔥 BIG KPI DISPLAY (GREEN)
+    # ================================
+    st.markdown("### Predicted Lifetime")
+
+    st.markdown(f"""
+    <div style="
+        background-color: #0f5132;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    ">
+        <div style="font-size: 20px; color: #a7f3d0; font-weight: 600;">
+            Predicted Lifetime
+        </div>
+        <div style="font-size: 48px; color: #00ff88; font-weight: 900;">
+            {prediction:.0f} Days
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ================================
+    # ACTUAL vs PREDICTED + METRICS
+    # ================================
+    if HAS_TRAIN:
+        st.subheader("Model Performance")
+
+        r2 = r2_score(y_train, y_train_pred)
+        rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
+
+        model_type = type(model).__name__
+        if "XGB" in model_type:
+            model_type = "XGBoost"
+        elif "LGBM" in model_type:
+            model_type = "LightGBM"
+        elif "RandomForest" in model_type:
+            model_type = "Random Forest"
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("R² Score", f"{r2:.3f}")
+        col2.metric("RMSE", f"{rmse:.2f}")
+        col3.metric("Model Type", model_type)
+
+        # ================================
+        # PLOT
+        # ================================
+        st.subheader("Actual vs Predicted")
+
+        fig, ax = plt.subplots()
+        ax.scatter(y_train, y_train_pred, alpha=0.6)
+
+        min_val = min(np.min(y_train), np.min(y_train_pred))
+        max_val = max(np.max(y_train), np.max(y_train_pred))
+        ax.plot([min_val, max_val], [min_val, max_val], 'r-')
+
+        ax.set_xlim(0, 800)
+        ax.set_ylim(0, 800)
+        ax.set_xlabel("Actual")
+        ax.set_ylabel("Predicted")
+        ax.set_title("Actual vs Predicted")
+
+        st.pyplot(fig)
