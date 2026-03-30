@@ -73,7 +73,7 @@ st.markdown("""
 [data-testid="stWidgetLabel"] label {
     font-size: 22px !important;
     font-weight: 800 !important;
-    color: white !important;
+    color: #1a1a1a !important;
 }
 [data-baseweb="input"] input {
     font-size: 22px !important;
