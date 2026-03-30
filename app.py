@@ -161,6 +161,7 @@ if st.button("Predict"):
     prediction = model.predict(processed)[0]
 
     # ================================
+# ================================
 # 🔥 BIG KPI DISPLAY (GREEN)
 # ================================
 st.markdown("### Predicted Lifetime")
