@@ -107,7 +107,6 @@ tab1, tab2 = st.tabs(["🔮 Prediction", "📊 Feature Distribution"])
 # ================================
 with tab1:
 
-    # INPUTS
     PSN = st.number_input("PSN", 0.0, 2500.0, 1500.0)
     AVE_GROSS = st.number_input("Average Fluid Gross (bopd)", 0.0, 2500.0, 1500.0)
     AVE_GAS = st.number_input("Average GAS (Mscfd)", 0.0, 1000.0, 10.0)
@@ -130,37 +129,32 @@ with tab1:
     WELL_TYPE = st.selectbox("Well Type", ["VERTICAL", "DEVIATED", "UNKNOWN"])
     DHS = st.selectbox("DHS", ["GACT", "SANDTRAP", "SANDTRAP_SHROUD", "HYBRID", "SCREEN", "UNKNOWN"])
 
-    # PREDICT
     if st.button("Predict"):
 
         input_df = pd.DataFrame([{
-            'PSN': PSN,
-            'AVE_GROSS': AVE_GROSS,
-            'AVE_GAS': AVE_GAS,
-            'PUMP_EFF': PUMP_EFF,
-            'OD_PUMP': OD_PUMP,
-            'SL': SL,
-            'SPM': SPM,
-            'SM': SM,
-            'TORQUE': TORQUE,
-            'LOAD': LOAD,
-            'ROD_STRESS': ROD_STRESS,
-            'FREQ_OFF': FREQ_OFF,
-            'HOUR_OFF': HOUR_OFF,
-            'ROD_GUIDE': ROD_GUIDE,
-            'GASSY': GASSY,
-            'PARAFFINIC': PARAFFINIC,
-            'SCALE': SCALE,
-            'WELL_TYPE': WELL_TYPE,
-            'DHS': DHS
+            'PSN': PSN, 'AVE_GROSS': AVE_GROSS, 'AVE_GAS': AVE_GAS,
+            'PUMP_EFF': PUMP_EFF, 'OD_PUMP': OD_PUMP, 'SL': SL,
+            'SPM': SPM, 'SM': SM, 'TORQUE': TORQUE, 'LOAD': LOAD,
+            'ROD_STRESS': ROD_STRESS, 'FREQ_OFF': FREQ_OFF, 'HOUR_OFF': HOUR_OFF,
+            'ROD_GUIDE': ROD_GUIDE, 'GASSY': GASSY, 'PARAFFINIC': PARAFFINIC,
+            'SCALE': SCALE, 'WELL_TYPE': WELL_TYPE, 'DHS': DHS
         }])
 
         processed = preprocess_data(input_df)
         prediction = model.predict(processed)[0]
 
-        # BIG KPI DISPLAY (GREEN)
-        st.markdown("### Predicted Lifetime")
+        # Save input values to session state so Tab 2 can use them
+        st.session_state['user_input'] = {
+            'PSN': PSN, 'AVE_GROSS': AVE_GROSS, 'AVE_GAS': AVE_GAS,
+            'PUMP_EFF': PUMP_EFF, 'OD_PUMP': OD_PUMP, 'SL': SL,
+            'SPM': SPM, 'SM': SM, 'TORQUE': TORQUE, 'LOAD': LOAD,
+            'ROD_STRESS': ROD_STRESS, 'FREQ_OFF': FREQ_OFF, 'HOUR_OFF': HOUR_OFF,
+            'ROD_GUIDE': ROD_GUIDE, 'GASSY': GASSY, 'PARAFFINIC': PARAFFINIC,
+            'SCALE': SCALE
+        }
 
+        # BIG KPI DISPLAY
+        st.markdown("### Predicted Lifetime")
         st.markdown(f"""
         <div style="
             background-color: #0f5132;
@@ -179,7 +173,9 @@ with tab1:
         </div>
         """, unsafe_allow_html=True)
 
-        # ACTUAL vs PREDICTED + METRICS
+        st.info("💡 Go to the **Feature Distribution** tab to see where your inputs sit in the data.")
+
+        # MODEL PERFORMANCE
         if HAS_TRAIN:
             st.subheader("Model Performance")
 
@@ -199,22 +195,17 @@ with tab1:
             col2.metric("RMSE", f"{rmse:.2f}")
             col3.metric("Model Type", model_type)
 
-            # PLOT
             st.subheader("Actual vs Predicted")
-
             fig, ax = plt.subplots()
             ax.scatter(y_train, y_train_pred, alpha=0.6)
-
             min_val = min(np.min(y_train), np.min(y_train_pred))
             max_val = max(np.max(y_train), np.max(y_train_pred))
             ax.plot([min_val, max_val], [min_val, max_val], 'r-')
-
             ax.set_xlim(0, 800)
             ax.set_ylim(0, 800)
             ax.set_xlabel("Actual")
             ax.set_ylabel("Predicted")
             ax.set_title("Actual vs Predicted")
-
             st.pyplot(fig)
             plt.close(fig)
 
@@ -224,6 +215,12 @@ with tab1:
 with tab2:
     st.subheader("Feature Distributions")
 
+    # Check if user has predicted yet
+    user_input = st.session_state.get('user_input', None)
+
+    if user_input is None:
+        st.info("👈 Go to the **Prediction** tab, fill in your inputs and click **Predict** first — your values will then be highlighted in red on the charts below.")
+
     try:
         df_raw = load_raw_data()
         X_train_num = df_raw[num_cols]
@@ -231,9 +228,28 @@ with tab2:
         cols = st.columns(2)
         for i, col in enumerate(X_train_num.columns):
             fig, ax = plt.subplots(figsize=(6, 3))
-            sns.histplot(X_train_num[col].dropna(), ax=ax)
+
+            # Draw histogram
+            sns.histplot(X_train_num[col].dropna(), ax=ax, color='steelblue')
             ax.set_title(f'Distribution of {col}')
             ax.set_xlim(left=0)
+
+            # If user has predicted, overlay their input value
+            if user_input is not None and col in user_input:
+                val = user_input[col]
+                x_range = ax.get_xlim()[1] - ax.get_xlim()[0]
+
+                # Red dashed vertical line
+                ax.axvline(x=val, color='red', linewidth=2,
+                           linestyle='--', label=f'Your input: {val}')
+
+                # Red shaded band around the value
+                ax.axvspan(val - x_range * 0.02,
+                           val + x_range * 0.02,
+                           alpha=0.25, color='red')
+
+                ax.legend(fontsize=8)
+
             plt.tight_layout()
             cols[i % 2].pyplot(fig)
             plt.close(fig)
