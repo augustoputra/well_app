@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import joblib
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.metrics import r2_score, mean_squared_error
 
 # ================================
@@ -25,6 +26,13 @@ def load_all():
         HAS_TRAIN = False
 
     return model, scaler, encoder, num_imputer, cat_imputer, y_train, y_train_pred, HAS_TRAIN
+
+
+@st.cache_data
+def load_raw_data():
+    df = pd.read_csv("data.csv")
+    df = df.drop_duplicates()
+    return df
 
 
 model, scaler, encoder, num_imputer, cat_imputer, y_train, y_train_pred, HAS_TRAIN = load_all()
@@ -90,121 +98,145 @@ section.main * {
 """, unsafe_allow_html=True)
 
 # ================================
-# INPUTS
+# TABS
 # ================================
-PSN = st.number_input("PSN", 0.0, 2500.0, 1500.0)
-AVE_GROSS = st.number_input("Average Fluid Gross (bopd)", 0.0, 2500.0, 1500.0)
-AVE_GAS = st.number_input("Average GAS (Mscfd)", 0.0, 1000.0, 10.0)
-PUMP_EFF = st.number_input("Pump Efficiency", 0.0, 1.0, 0.5)
-OD_PUMP = st.number_input("Pump Outer Diameter (inch)", 1.0, 5.0, 2.5)
-SL = st.number_input("Stroke Length (inch)", 0.0, 200.0, 50.0)
-SPM = st.number_input("Stroke Per Minute", 0.0, 13.0, 5.0)
-SM = st.number_input("Submergence (SM, in meter)", 0.0, 3000.0, 100.0)
-TORQUE = st.number_input("Torque", 0.0, 1.0, 0.5)
-LOAD = st.number_input("Load", 0.0, 1.0, 0.5)
-ROD_STRESS = st.number_input("Rod Stress", 0.0, 1.0, 0.5)
-FREQ_OFF = st.number_input("Freq Off", 0.0, 500.0, 10.0)
-HOUR_OFF = st.number_input("Hour Off", 0.0, 9000.0, 20.0)
-
-ROD_GUIDE = st.selectbox("Rod Guide", [0, 1])
-GASSY = st.selectbox("Gassy", [0, 1])
-PARAFFINIC = st.selectbox("Paraffinic", [0, 1])
-SCALE = st.selectbox("Scale", [0, 1])
-
-WELL_TYPE = st.selectbox("Well Type", ["VERTICAL", "DEVIATED", "UNKNOWN"])
-DHS = st.selectbox("DHS", ["GACT", "SANDTRAP", "SANDTRAP_SHROUD", "HYBRID", "SCREEN", "UNKNOWN"])
+tab1, tab2 = st.tabs(["🔮 Prediction", "📊 Feature Distribution"])
 
 # ================================
-# PREDICT
+# TAB 1: PREDICTION
 # ================================
-if st.button("Predict"):
+with tab1:
 
-    input_df = pd.DataFrame([{
-        'PSN': PSN,
-        'AVE_GROSS': AVE_GROSS,
-        'AVE_GAS': AVE_GAS,
-        'PUMP_EFF': PUMP_EFF,
-        'OD_PUMP': OD_PUMP,
-        'SL': SL,
-        'SPM': SPM,
-        'SM': SM,
-        'TORQUE': TORQUE,
-        'LOAD': LOAD,
-        'ROD_STRESS': ROD_STRESS,
-        'FREQ_OFF': FREQ_OFF,
-        'HOUR_OFF': HOUR_OFF,
-        'ROD_GUIDE': ROD_GUIDE,
-        'GASSY': GASSY,
-        'PARAFFINIC': PARAFFINIC,
-        'SCALE': SCALE,
-        'WELL_TYPE': WELL_TYPE,
-        'DHS': DHS
-    }])
+    # INPUTS
+    PSN = st.number_input("PSN", 0.0, 2500.0, 1500.0)
+    AVE_GROSS = st.number_input("Average Fluid Gross (bopd)", 0.0, 2500.0, 1500.0)
+    AVE_GAS = st.number_input("Average GAS (Mscfd)", 0.0, 1000.0, 10.0)
+    PUMP_EFF = st.number_input("Pump Efficiency", 0.0, 1.0, 0.5)
+    OD_PUMP = st.number_input("Pump Outer Diameter (inch)", 1.0, 5.0, 2.5)
+    SL = st.number_input("Stroke Length (inch)", 0.0, 200.0, 50.0)
+    SPM = st.number_input("Stroke Per Minute", 0.0, 13.0, 5.0)
+    SM = st.number_input("Submergence (SM, in meter)", 0.0, 3000.0, 100.0)
+    TORQUE = st.number_input("Torque", 0.0, 1.0, 0.5)
+    LOAD = st.number_input("Load", 0.0, 1.0, 0.5)
+    ROD_STRESS = st.number_input("Rod Stress", 0.0, 1.0, 0.5)
+    FREQ_OFF = st.number_input("Freq Off", 0.0, 500.0, 10.0)
+    HOUR_OFF = st.number_input("Hour Off", 0.0, 9000.0, 20.0)
 
-    processed = preprocess_data(input_df)
-    prediction = model.predict(processed)[0]
+    ROD_GUIDE = st.selectbox("Rod Guide", [0, 1])
+    GASSY = st.selectbox("Gassy", [0, 1])
+    PARAFFINIC = st.selectbox("Paraffinic", [0, 1])
+    SCALE = st.selectbox("Scale", [0, 1])
 
-    # ================================
-    # 🔥 BIG KPI DISPLAY (GREEN)
-    # ================================
-    st.markdown("### Predicted Lifetime")
+    WELL_TYPE = st.selectbox("Well Type", ["VERTICAL", "DEVIATED", "UNKNOWN"])
+    DHS = st.selectbox("DHS", ["GACT", "SANDTRAP", "SANDTRAP_SHROUD", "HYBRID", "SCREEN", "UNKNOWN"])
 
-    st.markdown(f"""
-    <div style="
-        background-color: #0f5132;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        margin-top: 10px;
-        margin-bottom: 20px;
-    ">
-        <div style="font-size: 20px; color: #a7f3d0; font-weight: 600;">
-            Predicted Lifetime
+    # PREDICT
+    if st.button("Predict"):
+
+        input_df = pd.DataFrame([{
+            'PSN': PSN,
+            'AVE_GROSS': AVE_GROSS,
+            'AVE_GAS': AVE_GAS,
+            'PUMP_EFF': PUMP_EFF,
+            'OD_PUMP': OD_PUMP,
+            'SL': SL,
+            'SPM': SPM,
+            'SM': SM,
+            'TORQUE': TORQUE,
+            'LOAD': LOAD,
+            'ROD_STRESS': ROD_STRESS,
+            'FREQ_OFF': FREQ_OFF,
+            'HOUR_OFF': HOUR_OFF,
+            'ROD_GUIDE': ROD_GUIDE,
+            'GASSY': GASSY,
+            'PARAFFINIC': PARAFFINIC,
+            'SCALE': SCALE,
+            'WELL_TYPE': WELL_TYPE,
+            'DHS': DHS
+        }])
+
+        processed = preprocess_data(input_df)
+        prediction = model.predict(processed)[0]
+
+        # BIG KPI DISPLAY (GREEN)
+        st.markdown("### Predicted Lifetime")
+
+        st.markdown(f"""
+        <div style="
+            background-color: #0f5132;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        ">
+            <div style="font-size: 20px; color: #a7f3d0; font-weight: 600;">
+                Predicted Lifetime
+            </div>
+            <div style="font-size: 48px; color: #00ff88; font-weight: 900;">
+                {prediction:.0f} Days
+            </div>
         </div>
-        <div style="font-size: 48px; color: #00ff88; font-weight: 900;">
-            {prediction:.0f} Days
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    # ================================
-    # ACTUAL vs PREDICTED + METRICS
-    # ================================
-    if HAS_TRAIN:
-        st.subheader("Model Performance")
+        # ACTUAL vs PREDICTED + METRICS
+        if HAS_TRAIN:
+            st.subheader("Model Performance")
 
-        r2 = r2_score(y_train, y_train_pred)
-        rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
+            r2 = r2_score(y_train, y_train_pred)
+            rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
 
-        model_type = type(model).__name__
-        if "XGB" in model_type:
-            model_type = "XGBoost"
-        elif "LGBM" in model_type:
-            model_type = "LightGBM"
-        elif "RandomForest" in model_type:
-            model_type = "Random Forest"
+            model_type = type(model).__name__
+            if "XGB" in model_type:
+                model_type = "XGBoost"
+            elif "LGBM" in model_type:
+                model_type = "LightGBM"
+            elif "RandomForest" in model_type:
+                model_type = "Random Forest"
 
-        col1, col2, col3 = st.columns(3)
-        col1.metric("R² Score", f"{r2:.3f}")
-        col2.metric("RMSE", f"{rmse:.2f}")
-        col3.metric("Model Type", model_type)
+            col1, col2, col3 = st.columns(3)
+            col1.metric("R² Score", f"{r2:.3f}")
+            col2.metric("RMSE", f"{rmse:.2f}")
+            col3.metric("Model Type", model_type)
 
-        # ================================
-        # PLOT
-        # ================================
-        st.subheader("Actual vs Predicted")
+            # PLOT
+            st.subheader("Actual vs Predicted")
 
-        fig, ax = plt.subplots()
-        ax.scatter(y_train, y_train_pred, alpha=0.6)
+            fig, ax = plt.subplots()
+            ax.scatter(y_train, y_train_pred, alpha=0.6)
 
-        min_val = min(np.min(y_train), np.min(y_train_pred))
-        max_val = max(np.max(y_train), np.max(y_train_pred))
-        ax.plot([min_val, max_val], [min_val, max_val], 'r-')
+            min_val = min(np.min(y_train), np.min(y_train_pred))
+            max_val = max(np.max(y_train), np.max(y_train_pred))
+            ax.plot([min_val, max_val], [min_val, max_val], 'r-')
 
-        ax.set_xlim(0, 800)
-        ax.set_ylim(0, 800)
-        ax.set_xlabel("Actual")
-        ax.set_ylabel("Predicted")
-        ax.set_title("Actual vs Predicted")
+            ax.set_xlim(0, 800)
+            ax.set_ylim(0, 800)
+            ax.set_xlabel("Actual")
+            ax.set_ylabel("Predicted")
+            ax.set_title("Actual vs Predicted")
 
-        st.pyplot(fig)
+            st.pyplot(fig)
+            plt.close(fig)
+
+# ================================
+# TAB 2: FEATURE DISTRIBUTION
+# ================================
+with tab2:
+    st.subheader("Feature Distributions")
+
+    try:
+        df_raw = load_raw_data()
+        X_train_num = df_raw[num_cols]
+
+        cols = st.columns(2)
+        for i, col in enumerate(X_train_num.columns):
+            fig, ax = plt.subplots(figsize=(6, 3))
+            sns.histplot(X_train_num[col].dropna(), ax=ax)
+            ax.set_title(f'Distribution of {col}')
+            ax.set_xlim(left=0)
+            plt.tight_layout()
+            cols[i % 2].pyplot(fig)
+            plt.close(fig)
+
+    except Exception as e:
+        st.warning(f"Could not load data for charts: {e}")
